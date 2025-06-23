@@ -1,8 +1,7 @@
-// src/utils/api.js
 import axios from 'axios'
 
-// 🔧 配置区域 - 请填写你的Google Apps Script URL
-const API_BASE_URL = 'YOUR_GOOGLE_APPS_SCRIPT_URL'
+// 🔧 配置区域 - 将被环境变量替换
+const API_BASE_URL = 'GOOGLE_APPS_SCRIPT_URL_PLACEHOLDER'
 
 // 创建axios实例
 const api = axios.create({

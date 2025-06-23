@@ -10,6 +10,11 @@ import './assets/styles/main.css'
 const app = createApp(App)
 const pinia = createPinia()
 
+// 全局配置
+app.config.globalProperties.$config = {
+  apiUrl: 'GOOGLE_APPS_SCRIPT_URL_PLACEHOLDER'
+}
+
 for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
   app.component(key, component)
 }
