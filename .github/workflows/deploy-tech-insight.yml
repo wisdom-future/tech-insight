@@ -477,7 +477,18 @@ jobs:
       - name: Build Application
         run: |
           echo "🔨 Building application..."
+          echo "📁 Current directory contents:"
+          ls -la
+          echo "📁 Source directory contents:"
+          ls -la src/
+          echo "📄 Package.json contents:"
+          cat package.json
+          echo "🔧 Running build..."
           npm run build
+          echo "📁 Build output:"
+          ls -la dist/
+          echo "📄 Built index.html:"
+          cat dist/index.html || echo "No index.html found in dist/"
         env:
           NODE_ENV: production
 
@@ -486,6 +497,23 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           enablement: true
+
+            - name: Verify Build Output
+        run: |
+          echo "🔍 Verifying build output..."
+          if [ ! -d "dist" ]; then
+            echo "❌ dist directory not found!"
+            exit 1
+          fi
+          if [ ! -f "dist/index.html" ]; then
+            echo "❌ index.html not found in dist!"
+            exit 1
+          fi
+          echo "✅ Build verification passed"
+          echo "📊 Dist directory size:"
+          du -sh dist/
+          echo "📄 Files in dist:"
+          find dist/ -type f -name "*.html" -o -name "*.js" -o -name "*.css" | head -10
 
       - name: Upload to Pages
         uses: actions/upload-pages-artifact@v3
