@@ -165,7 +165,7 @@ jobs:
         run: |
           echo "🔧 Creating Vue.js application..."
           
-          # 生成 src/main.js
+          # 生成包含环境变量的 src/main.js
           cat > src/main.js << 'EOF'
           import { createApp } from 'vue'
           import { createPinia } from 'pinia'
@@ -179,6 +179,11 @@ jobs:
           const app = createApp(App)
           const pinia = createPinia()
 
+          // 全局配置
+          app.config.globalProperties.$config = {
+            apiUrl: 'GOOGLE_APPS_SCRIPT_URL_PLACEHOLDER'
+          }
+
           for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
             app.component(key, component)
           }
@@ -189,7 +194,128 @@ jobs:
           app.mount('#app')
           EOF
           
-          # 生成 src/App.vue
+          # 生成包含环境变量的 src/utils/api.js
+          cat > src/utils/api.js << 'EOF'
+          import axios from 'axios'
+
+          // 🔧 配置区域 - 将被环境变量替换
+          const API_BASE_URL = 'GOOGLE_APPS_SCRIPT_URL_PLACEHOLDER'
+
+          // 创建axios实例
+          const api = axios.create({
+            baseURL: API_BASE_URL,
+            timeout: 15000,
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          })
+
+          // 请求拦截器
+          api.interceptors.request.use(
+            config => {
+              console.log('API请求:', config.url, config.params)
+              return config
+            },
+            error => {
+              console.error('请求错误:', error)
+              return Promise.reject(error)
+            }
+          )
+
+          // 响应拦截器
+          api.interceptors.response.use(
+            response => {
+              console.log('API响应:', response.data)
+              return response
+            },
+            error => {
+              console.error('响应错误:', error)
+              return Promise.reject(error)
+            }
+          )
+
+          // 📊 获取数据采集状态
+          export const getCollectionData = async () => {
+            try {
+              const response = await api.get('', {
+                params: { action: 'getCollectionData' }
+              })
+              return response.data
+            } catch (error) {
+              console.error('获取Collection数据失败:', error)
+              throw error
+            }
+          }
+
+          // 📈 获取概览数据
+          export const getOverviewData = async () => {
+            try {
+              const response = await api.get('', {
+                params: { action: 'getOverviewData' }
+              })
+              return response.data
+            } catch (error) {
+              console.error('获取Overview数据失败:', error)
+              throw error
+            }
+          }
+
+          // 🧠 获取分析数据
+          export const getAnalysisData = async () => {
+            try {
+              const response = await api.get('', {
+                params: { action: 'getAnalysisData' }
+              })
+              return response.data
+            } catch (error) {
+              console.error('获取Analysis数据失败:', error)
+              throw error
+            }
+          }
+
+          // 🎯 获取行动建议数据
+          export const getActionData = async () => {
+            try {
+              const response = await api.get('', {
+                params: { action: 'getActionData' }
+              })
+              return response.data
+            } catch (error) {
+              console.error('获取Action数据失败:', error)
+              throw error
+            }
+          }
+
+          // 📋 获取报告数据
+          export const getReportsData = async () => {
+            try {
+              const response = await api.get('', {
+                params: { action: 'getReportsData' }
+              })
+              return response.data
+            } catch (error) {
+              console.error('获取Reports数据失败:', error)
+              throw error
+            }
+          }
+
+          // 🔧 获取系统状态
+          export const getSystemStatus = async () => {
+            try {
+              const response = await api.get('', {
+                params: { action: 'getSystemStatus' }
+              })
+              return response.data
+            } catch (error) {
+              console.error('获取系统状态失败:', error)
+              throw error
+            }
+          }
+
+          export default api
+          EOF
+          
+          # 生成 src/App.vue (保持原有内容)
           cat > src/App.vue << 'EOF'
           <template>
             <div id="app" class="min-h-screen bg-gray-50">
@@ -211,7 +337,7 @@ jobs:
           </script>
           EOF
           
-          # 生成路由文件
+          # 生成路由文件 (保持原有内容)
           cat > src/router/index.js << 'EOF'
           import { createRouter, createWebHistory } from 'vue-router'
           import Overview from '@/views/Overview.vue'
@@ -235,6 +361,8 @@ jobs:
 
           export default router
           EOF
+        env:
+          GOOGLE_APPS_SCRIPT_URL: ${{ secrets.GOOGLE_APPS_SCRIPT_URL }}
 
       - name: Create Components and Views
         run: |
@@ -496,6 +624,24 @@ jobs:
           else
             echo "ℹ️ 没有变更需要提交"
           fi
+
+      - name: Replace Environment Variables
+        run: |
+          echo "🔧 替换环境变量..."
+          
+          # 替换API URL
+          if [ -n "$GOOGLE_APPS_SCRIPT_URL" ]; then
+            echo "设置Google Apps Script URL: $GOOGLE_APPS_SCRIPT_URL"
+            sed -i "s|GOOGLE_APPS_SCRIPT_URL_PLACEHOLDER|$GOOGLE_APPS_SCRIPT_URL|g" src/utils/api.js
+            sed -i "s|GOOGLE_APPS_SCRIPT_URL_PLACEHOLDER|$GOOGLE_APPS_SCRIPT_URL|g" src/main.js
+            echo "✅ API URL替换完成"
+          else
+            echo "⚠️ 警告: GOOGLE_APPS_SCRIPT_URL 未设置，使用默认配置"
+          fi
+          
+          echo "✅ 环境变量替换完成"
+        env:
+          GOOGLE_APPS_SCRIPT_URL: ${{ secrets.GOOGLE_APPS_SCRIPT_URL }}
 
       - name: Install Dependencies
         run: |
