@@ -1,0 +1,219 @@
+# .github/workflows/deploy-tech-insight.yml
+name: 🚀 Tech Insight System - Complete Deployment
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      setup_mode:
+        description: 'Setup Mode'
+        required: true
+        default: 'full'
+        type: choice
+        options:
+        - full
+        - frontend-only
+        - data-only
+  schedule:
+    # 每天早上8点自动更新数据
+    - cron: '0 0 * * *'
+
+env:
+  NODE_VERSION: '18'
+  GOOGLE_SHEETS_BASE_URL: 'https://docs.google.com/spreadsheets/d'
+
+jobs:
+  # 第一步：创建Google Sheets数据库结构
+  setup-database:
+    if: github.event.inputs.setup_mode == 'full' || github.event.inputs.setup_mode == 'data-only'
+    runs-on: ubuntu-latest
+    name: 📊 Setup Google Sheets Database
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: |
+          npm install -g @google-cloud/storage googleapis
+          npm install
+
+      - name: Create Database Structure
+        run: |
+          echo "🏗️ Creating Google Sheets Database Structure..."
+          node scripts/setup-database.js
+        env:
+          GOOGLE_SERVICE_ACCOUNT_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
+          GOOGLE_SHEETS_CONFIG_ID: ${{ secrets.GOOGLE_SHEETS_CONFIG_ID }}
+          GOOGLE_SHEETS_RAWDATA_ID: ${{ secrets.GOOGLE_SHEETS_RAWDATA_ID }}
+          GOOGLE_SHEETS_INTELLIGENCE_ID: ${{ secrets.GOOGLE_SHEETS_INTELLIGENCE_ID }}
+          GOOGLE_SHEETS_OPERATIONS_ID: ${{ secrets.GOOGLE_SHEETS_OPERATIONS_ID }}
+
+  # 第二步：生成API访问脚本
+  setup-api-access:
+    needs: setup-database
+    if: always() && (github.event.inputs.setup_mode == 'full' || github.event.inputs.setup_mode == 'data-only')
+    runs-on: ubuntu-latest
+    name: 🔌 Setup Google Apps Script API
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Deploy Apps Script
+        run: |
+          echo "🔌 Deploying Google Apps Script for API access..."
+          node scripts/deploy-apps-script.js
+        env:
+          GOOGLE_SERVICE_ACCOUNT_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
+          GOOGLE_APPS_SCRIPT_ID: ${{ secrets.GOOGLE_APPS_SCRIPT_ID }}
+
+  # 第三步：构建前端应用
+  build-frontend:
+    if: github.event.inputs.setup_mode == 'full' || github.event.inputs.setup_mode == 'frontend-only' || github.event_name == 'push' || github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    name: 🏗️ Build Frontend Application
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Generate Static Data
+        run: |
+          echo "📊 Fetching data from Google Sheets..."
+          node scripts/fetch-data.js
+        env:
+          GOOGLE_SHEETS_API_URL: ${{ secrets.GOOGLE_SHEETS_API_URL }}
+          GOOGLE_SHEETS_CONFIG_ID: ${{ secrets.GOOGLE_SHEETS_CONFIG_ID }}
+          GOOGLE_SHEETS_RAWDATA_ID: ${{ secrets.GOOGLE_SHEETS_RAWDATA_ID }}
+          GOOGLE_SHEETS_INTELLIGENCE_ID: ${{ secrets.GOOGLE_SHEETS_INTELLIGENCE_ID }}
+          GOOGLE_SHEETS_OPERATIONS_ID: ${{ secrets.GOOGLE_SHEETS_OPERATIONS_ID }}
+
+      - name: Build Application
+        run: |
+          echo "🔨 Building Vue.js application..."
+          npm run build
+        env:
+          NODE_ENV: production
+          VITE_APP_TITLE: "ICT技术情报决策引擎"
+          VITE_APP_VERSION: ${{ github.sha }}
+          VITE_BUILD_TIME: ${{ github.event.head_commit.timestamp }}
+
+      - name: Optimize Build
+        run: |
+          echo "⚡ Optimizing build output..."
+          # 压缩图片
+          npx imagemin "dist/assets/images/*" --out-dir="dist/assets/images/"
+          # 生成sitemap
+          node scripts/generate-sitemap.js
+          # 生成robots.txt
+          echo "User-agent: *\nAllow: /" > dist/robots.txt
+
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: tech-insight-build
+          path: dist/
+          retention-days: 30
+
+  # 第四步：部署到GitHub Pages
+  deploy-pages:
+    needs: build-frontend
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    name: 🚀 Deploy to GitHub Pages
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Download Build Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: tech-insight-build
+          path: dist/
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload to Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist/
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+  # 第五步：通知和监控
+  notify-completion:
+    needs: [setup-database, setup-api-access, build-frontend, deploy-pages]
+    if: always()
+    runs-on: ubuntu-latest
+    name: 📢 Deployment Notification
+    steps:
+      - name: Deployment Status
+        run: |
+          echo "🎉 Tech Insight System Deployment Complete!"
+          echo "📊 Database Setup: ${{ needs.setup-database.result }}"
+          echo "🔌 API Setup: ${{ needs.setup-api-access.result }}"
+          echo "🏗️ Frontend Build: ${{ needs.build-frontend.result }}"
+          echo "🚀 Pages Deploy: ${{ needs.deploy-pages.result }}"
+          echo "🌐 Site URL: https://${{ github.repository_owner }}.github.io/tech-insight/"
+
+      - name: Update Make.com Webhook
+        if: success()
+        run: |
+          curl -X POST "${{ secrets.MAKE_WEBHOOK_URL }}" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "event": "github_deployment_complete",
+              "repository": "${{ github.repository }}",
+              "timestamp": "${{ github.event.head_commit.timestamp }}",
+              "site_url": "https://${{ github.repository_owner }}.github.io/tech-insight/",
+              "commit_sha": "${{ github.sha }}"
+            }'
+
+  # 第六步：数据质量检查
+  data-quality-check:
+    needs: deploy-pages
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    name: 🔍 Data Quality Check
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Run Data Quality Checks
+        run: |
+          echo "🔍 Running data quality checks..."
+          node scripts/data-quality-check.js
+        env:
+          GOOGLE_SHEETS_API_URL: ${{ secrets.GOOGLE_SHEETS_API_URL }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: Generate Quality Report
+        run: |
+          echo "📊 Generating data quality report..."
+          node scripts/generate-quality-report.js
