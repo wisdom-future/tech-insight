@@ -1,0 +1,23 @@
+{
+  "lastUpdated": "2025-06-23T10:00:00Z",
+  "techData": {
+    "academicPapers": {
+      "title": "学术论文",
+      "icon": "📚",
+      "status": "active",
+      "todayCount": 45,
+      "totalCount": 1250,
+      "successRate": 98.5,
+      "trendData": [30, 35, 42, 38, 45]
+    },
+    "patentData": {
+      "title": "专利数据", 
+      "icon": "🔬",
+      "status": "active",
+      "todayCount": 78,
+      "totalCount": 3420,
+      "successRate": 96.8,
+      "trendData": [65, 70, 75, 72, 78]
+    }
+  }
+}
