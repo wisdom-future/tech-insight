@@ -403,15 +403,26 @@ jobs:
           </template>
 
           <script setup>
-          import { ref, onMounted } from 'vue'
-          import dayjs from 'dayjs'
+          import { ref, onMounted, onUnmounted } from 'vue'
 
           const currentTime = ref('')
 
+          let timer = null
+
+          const updateTime = () => {
+            const now = new Date()
+            currentTime.value = now.toLocaleString('zh-CN')
+          }
+
           onMounted(() => {
-            setInterval(() => {
-              currentTime.value = dayjs().format('YYYY-MM-DD HH:mm:ss')
-            }, 1000)
+            updateTime()
+            timer = setInterval(updateTime, 1000)
+          })
+
+          onUnmounted(() => {
+            if (timer) {
+              clearInterval(timer)
+            }
           })
           </script>
           EOF
@@ -455,6 +466,94 @@ jobs:
               </div>
             </footer>
           </template>
+          EOF
+
+          # 创建通用组件
+          cat > src/components/common/DataCard.vue << 'EOF'
+          <template>
+            <div class="bg-white rounded-lg p-4 border border-gray-200 shadow-sm">
+              <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center">
+                  <span class="text-2xl mr-2">{{ data.icon || '📊' }}</span>
+                  <h3 class="font-medium text-gray-900">{{ data.title || '数据卡片' }}</h3>
+                </div>
+                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                  {{ data.status === 'loading' ? '加载中' : '活跃' }}
+                </span>
+              </div>
+              
+              <div v-if="loading" class="space-y-2">
+                <div class="animate-pulse">
+                  <div class="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+                  <div class="h-4 bg-gray-200 rounded w-1/2 mb-2"></div>
+                  <div class="h-4 bg-gray-200 rounded w-2/3"></div>
+                </div>
+              </div>
+              
+              <div v-else class="space-y-2">
+                <div class="flex justify-between">
+                  <span class="text-sm text-gray-600">今日采集</span>
+                  <span class="text-sm font-semibold text-blue-600">{{ data.todayCount || 0 }} 条</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-sm text-gray-600">总计</span>
+                  <span class="text-sm font-semibold">{{ data.totalCount || 0 }} 条</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-sm text-gray-600">成功率</span>
+                  <span class="text-sm font-semibold text-green-600">{{ data.successRate || 0 }}%</span>
+                </div>
+              </div>
+            </div>
+          </template>
+
+          <script setup>
+          const props = defineProps({
+            data: {
+              type: Object,
+              default: () => ({})
+            },
+            loading: {
+              type: Boolean,
+              default: false
+            }
+          })
+          </script>
+          EOF
+
+          # 创建图表组件
+          cat > src/components/charts/TrendChart.vue << 'EOF'
+          <template>
+            <div class="w-full h-full flex items-center justify-center bg-gray-50 rounded-lg">
+              <div v-if="loading" class="text-gray-500">
+                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+                <p class="mt-2 text-sm">加载中...</p>
+              </div>
+              <div v-else class="text-gray-500 text-center">
+                <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+                <p class="mt-2 text-sm">趋势图表</p>
+              </div>
+            </div>
+          </template>
+
+          <script setup>
+          const props = defineProps({
+            data: {
+              type: Object,
+              default: () => ({})
+            },
+            loading: {
+              type: Boolean,
+              default: false
+            },
+            height: {
+              type: String,
+              default: '200px'
+            }
+          })
+          </script>
           EOF
 
       - name: Create View Pages
