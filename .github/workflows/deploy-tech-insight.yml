@@ -668,18 +668,20 @@ jobs:
       - name: Build Application
         run: |
           echo "🔨 Building application..."
-          echo "📁 Current directory contents:"
-          ls -la
-          echo "📁 Source directory contents:"
-          ls -la src/
-          echo "📄 Package.json contents:"
+          echo "📁 构建前的文件结构:"
+          find . -name "*.js" -o -name "*.vue" -o -name "*.html" | head -20
+          echo "📄 package.json内容:"
           cat package.json
-          echo "🔧 Running build..."
+          echo "📄 vite.config.js内容:"
+          cat vite.config.js
+          echo "🔧 开始构建..."
           npm run build
-          echo "📁 Build output:"
+          echo "📁 构建后dist目录内容:"
           ls -la dist/
-          echo "📄 Built index.html:"
-          cat dist/index.html || echo "No index.html found in dist/"
+          echo "📄 构建后的index.html:"
+          cat dist/index.html
+          echo "📁 dist/assets目录:"
+          ls -la dist/assets/ || echo "assets目录不存在"
         env:
           NODE_ENV: production
 
