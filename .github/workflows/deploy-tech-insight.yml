@@ -498,7 +498,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           enablement: true
 
-        - name: Verify Build Output
+      - name: Verify Build Output
         run: |
           echo "🔍 Verifying build output..."
           if [ ! -d "dist" ]; then
