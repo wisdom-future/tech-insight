@@ -470,37 +470,12 @@ jobs:
           EOF
 
       - name: Commit Project Files to Repository
-        run: |
-          echo "💾 提交项目文件到仓库..."
-          
-          # 检查是否有文件需要提交
-          git add .
-          git status
-          
-          # 配置Git用户
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          
-          # 检查是否有变更需要提交
-          if ! git diff --staged --quiet; then
-            echo "📝 发现新文件，正在提交..."
-            git commit -m "🚀 Auto-generate complete project structure
-            
-            Generated files:
-            - Complete Vue.js application structure
-            - All component files and configurations
-            - Package.json with dependencies
-            - Vite and Tailwind configurations
-            - Sample data files
-            
-            Ready for development and customization!"
-            
-            # 推送到仓库
-            git push
-            echo "✅ 项目文件已提交到仓库"
-          else
-            echo "ℹ️ 没有新文件需要提交"
-          fi
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: '🚀 Auto-generate complete project structure'
+          commit_user_name: 'GitHub Action'
+          commit_user_email: 'action@github.com'
+          commit_author: 'GitHub Action <action@github.com>'
 
       - name: Install Dependencies
         run: |
