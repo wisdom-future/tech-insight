@@ -14,14 +14,25 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import dayjs from 'dayjs'
+import { ref, onMounted, onUnmounted } from 'vue'
 
 const currentTime = ref('')
 
+let timer = null
+
+const updateTime = () => {
+  const now = new Date()
+  currentTime.value = now.toLocaleString('zh-CN')
+}
+
 onMounted(() => {
-  setInterval(() => {
-    currentTime.value = dayjs().format('YYYY-MM-DD HH:mm:ss')
-  }, 1000)
+  updateTime()
+  timer = setInterval(updateTime, 1000)
+})
+
+onUnmounted(() => {
+  if (timer) {
+    clearInterval(timer)
+  }
 })
 </script>
