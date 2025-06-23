@@ -144,13 +144,13 @@ jobs:
           }
           EOF
           
-          # 生成 index.html (修复路径)
+          # 生成 index.html (修复版本)
           cat > index.html << 'EOF'
           <!DOCTYPE html>
           <html lang="zh-CN">
           <head>
             <meta charset="UTF-8" />
-            <link rel="icon" type="image/svg+xml" href="/tech-insight/favicon.ico" />
+            <link rel="icon" type="image/svg+xml" href="./favicon.ico" />
             <meta name="viewport" content="width=device-width, initial-scale=1.0" />
             <title>ICT技术情报决策引擎</title>
             <meta name="description" content="基于AI的技术情报收集、分析和决策支持系统" />
@@ -167,7 +167,7 @@ jobs:
                 </div>
               </div>
             </div>
-            <script type="module" src="/tech-insight/src/main.js"></script>
+            <script type="module" src="./src/main.js"></script>
             <style>
               @keyframes spin {
                 0% { transform: rotate(0deg); }
