@@ -1,13 +1,35 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8" />
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔧</text></svg>" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ICT技术情报决策引擎</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>技术情报系统</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://unpkg.com/element-plus/dist/index.full.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/element-plus/dist/index.css">
 </head>
 <body>
-  <div id="app"></div>
-  <script type="module" src="/src/main.js"></script>
+    <div id="app">
+        <h1>{{ message }}</h1>
+        <el-button @click="showDialog = true">测试弹窗</el-button>
+        
+        <el-dialog v-model="showDialog" title="测试弹窗" width="600px">
+            <p>弹窗功能正常！</p>
+        </el-dialog>
+    </div>
+
+    <script>
+        const { createApp } = Vue;
+        const app = createApp({
+            data() {
+                return {
+                    message: '技术情报系统 - 基础版本',
+                    showDialog: false
+                }
+            }
+        });
+        app.use(ElementPlus);
+        app.mount('#app');
+    </script>
 </body>
 </html>
