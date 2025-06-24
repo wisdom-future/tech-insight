@@ -114,25 +114,4 @@ export const getSystemStatus = async () => {
   }
 }
 
-export async function getRawData(table, type) {
-  // 这里的 URL 和参数根据你后端 Apps Script 实际接口设定
-  // 假设你的 API 支持 ?table=Raw_Industry_Dynamics&type=today 这样的参数
-  const url = `https://${GOOGLE_APPS_SCRIPT_URL}?action=getRawData&table=${encodeURIComponent(table)}&type=${encodeURIComponent(type)}`;
-  const res = await fetch(url);
-  const json = await res.json();
-
-  if (!json.success) {
-    throw new Error(json.error || '原始数据获取失败');
-  }
-
-  // 假设后端返回 { data: [...], columns: [...] }
-  return {
-    data: json.data.records || [],
-    columns: json.data.columns || (json.data.records && json.data.records.length > 0
-      ? Object.keys(json.data.records[0]).map(k => ({ prop: k, label: k }))
-      : []
-    )
-  };
-}
-
 export default api
