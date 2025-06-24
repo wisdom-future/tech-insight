@@ -1,5 +1,5 @@
 <template>
-  <el-dialog v-model="visible" :title="dialogTitle" width="800px" @close="onClose">
+  <el-dialog :model-value="visible" :title="dialogTitle" width="800px" @close="onClose" @update:model-value="onClose">
     <el-table :data="pagedData" style="width: 100%">
       <el-table-column v-for="col in columns" :key="col.prop" :prop="col.prop" :label="col.label" show-overflow-tooltip />
     </el-table>
