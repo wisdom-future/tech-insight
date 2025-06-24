@@ -54,27 +54,25 @@ jobs:
           mkdir -p public
           mkdir -p data/{overview,collection,analysis,action,system,reports}
           
-          # 生成 package.json (移除 type: module)
+          # 生成 package.json (确保构建脚本正确)
           cat > package.json << 'EOF'
           {
             "name": "tech-insight",
             "version": "1.0.0",
             "description": "ICT技术情报决策引擎",
+            "type": "module",
             "scripts": {
               "dev": "vite",
               "build": "vite build",
-              "preview": "vite preview"
+              "preview": "vite preview",
+              "serve": "vite preview"
             },
             "dependencies": {
               "vue": "^3.4.0",
               "vue-router": "^4.2.5",
               "pinia": "^2.1.7",
               "axios": "^1.6.0",
-              "dayjs": "^1.11.10",
-              "echarts": "^5.4.3",
-              "vue-echarts": "^6.6.1",
-              "element-plus": "^2.4.4",
-              "@element-plus/icons-vue": "^2.3.1"
+              "dayjs": "^1.11.10"
             },
             "devDependencies": {
               "@vitejs/plugin-vue": "^4.5.2",
@@ -86,7 +84,7 @@ jobs:
           }
           EOF
           
-          # 生成 vite.config.js
+          # 生成 vite.config.js (修复版本)
           cat > vite.config.js << 'EOF'
           import { defineConfig } from 'vite'
           import vue from '@vitejs/plugin-vue'
@@ -102,11 +100,14 @@ jobs:
             },
             build: {
               outDir: 'dist',
-              assetsDir: 'assets'
+              assetsDir: 'assets',
+              emptyOutDir: true,
+              rollupOptions: {
+                input: resolve(__dirname, 'index.html')
+              }
             },
-            server: {
-              port: 3000,
-              host: true
+            esbuild: {
+              target: 'esnext'
             }
           })
           EOF
@@ -144,36 +145,19 @@ jobs:
           }
           EOF
           
-          # 生成 index.html (修复版本)
+          # 生成 index.html (最终修复版本)
           cat > index.html << 'EOF'
           <!DOCTYPE html>
           <html lang="zh-CN">
           <head>
             <meta charset="UTF-8" />
-            <link rel="icon" type="image/svg+xml" href="./favicon.ico" />
+            <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔧</text></svg>" />
             <meta name="viewport" content="width=device-width, initial-scale=1.0" />
             <title>ICT技术情报决策引擎</title>
-            <meta name="description" content="基于AI的技术情报收集、分析和决策支持系统" />
           </head>
           <body>
-            <div id="app">
-              <div style="display: flex; justify-content: center; align-items: center; height: 100vh; font-family: Arial, sans-serif;">
-                <div style="text-align: center;">
-                  <h1>ICT技术情报决策引擎</h1>
-                  <p>正在加载应用程序...</p>
-                  <div style="margin-top: 20px;">
-                    <div style="border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; width: 40px; height: 40px; animation: spin 2s linear infinite; margin: 0 auto;"></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <script type="module" src="./src/main.js"></script>
-            <style>
-              @keyframes spin {
-                0% { transform: rotate(0deg); }
-                100% { transform: rotate(360deg); }
-              }
-            </style>
+            <div id="app"></div>
+            <script type="module" src="/src/main.js"></script>
           </body>
           </html>
           EOF
@@ -182,33 +166,20 @@ jobs:
         run: |
           echo "🔧 Creating Vue.js application..."
           
-          # 生成包含环境变量的 src/main.js
+          # 生成 src/main.js (简化版本)
           cat > src/main.js << 'EOF'
           import { createApp } from 'vue'
-          import { createPinia } from 'pinia'
-          import ElementPlus from 'element-plus'
-          import 'element-plus/dist/index.css'
-          import * as ElementPlusIconsVue from '@element-plus/icons-vue'
           import App from './App.vue'
           import router from './router'
           import './assets/styles/main.css'
 
+          console.log('Starting Vue application...')
+
           const app = createApp(App)
-          const pinia = createPinia()
-
-          // 全局配置
-          app.config.globalProperties.$config = {
-            apiUrl: 'GOOGLE_APPS_SCRIPT_URL_PLACEHOLDER'
-          }
-
-          for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
-            app.component(key, component)
-          }
-
-          app.use(pinia)
           app.use(router)
-          app.use(ElementPlus)
           app.mount('#app')
+
+          console.log('Vue application mounted successfully')
           EOF
           
           # 生成包含环境变量的 src/utils/api.js
@@ -332,25 +303,50 @@ jobs:
           export default api
           EOF
           
-          # 生成 src/App.vue (保持原有内容)
+          # 生成 src/App.vue (简化版本)
           cat > src/App.vue << 'EOF'
           <template>
             <div id="app" class="min-h-screen bg-gray-50">
-              <Header />
+              <header class="bg-white shadow-sm border-b border-gray-200">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                  <div class="flex justify-between h-16">
+                    <div class="flex items-center">
+                      <h1 class="text-xl font-semibold text-gray-900">ICT技术情报决策引擎</h1>
+                    </div>
+                  </div>
+                </div>
+              </header>
+              
               <div class="flex">
-                <Sidebar />
+                <aside class="w-64 bg-white shadow-sm">
+                  <nav class="mt-5 px-2">
+                    <router-link
+                      v-for="item in navigation"
+                      :key="item.name"
+                      :to="item.href"
+                      class="group flex items-center px-2 py-2 text-base font-medium rounded-md text-gray-600 hover:bg-gray-50"
+                    >
+                      <span class="mr-3">{{ item.icon }}</span>
+                      {{ item.title }}
+                    </router-link>
+                  </nav>
+                </aside>
+                
                 <main class="flex-1 p-6">
                   <router-view />
                 </main>
               </div>
-              <Footer />
             </div>
           </template>
 
           <script setup>
-          import Header from '@/components/layout/Header.vue'
-          import Sidebar from '@/components/layout/Sidebar.vue'
-          import Footer from '@/components/layout/Footer.vue'
+          const navigation = [
+            { name: 'Overview', title: '概览总览', href: '/', icon: '📊' },
+            { name: 'Collection', title: '数据采集', href: '/collection', icon: '📥' },
+            { name: 'Analysis', title: '情报分析', href: '/analysis', icon: '🧠' },
+            { name: 'Action', title: '行动建议', href: '/action', icon: '🎯' },
+            { name: 'Reports', title: '报告中心', href: '/reports', icon: '📋' }
+          ]
           </script>
           EOF
           
@@ -767,20 +763,44 @@ jobs:
       - name: Build Application
         run: |
           echo "🔨 Building application..."
-          echo "📁 构建前的文件结构:"
-          find . -name "*.js" -o -name "*.vue" -o -name "*.html" | head -20
-          echo "📄 package.json内容:"
-          cat package.json
-          echo "📄 vite.config.js内容:"
-          cat vite.config.js
-          echo "🔧 开始构建..."
-          npm run build
-          echo "📁 构建后dist目录内容:"
+          
+          # 检查构建前的文件结构
+          echo "📁 构建前检查:"
+          ls -la
+          echo "📁 src目录:"
+          ls -la src/
+          echo "📁 src/components:"
+          ls -la src/components/ || echo "components目录不存在"
+          
+          # 检查package.json
+          echo "📄 Package.json scripts:"
+          cat package.json | grep -A 10 '"scripts"'
+          
+          # 清理可能的缓存
+          rm -rf node_modules/.vite
+          rm -rf dist
+          
+          # 执行构建
+          echo "🔧 开始Vite构建..."
+          npm run build -- --mode production --outDir dist
+          
+          # 检查构建结果
+          echo "📁 构建后检查:"
           ls -la dist/
           echo "📄 构建后的index.html:"
           cat dist/index.html
-          echo "📁 dist/assets目录:"
-          ls -la dist/assets/ || echo "assets目录不存在"
+          
+          # 验证关键文件存在
+          if [ ! -f "dist/index.html" ]; then
+            echo "❌ 错误: dist/index.html 不存在"
+            exit 1
+          fi
+          
+          # 检查是否有JS和CSS文件
+          echo "📁 构建后的assets:"
+          ls -la dist/assets/ || echo "No assets directory"
+          
+          echo "✅ 构建完成"
         env:
           NODE_ENV: production
 
