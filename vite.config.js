@@ -13,12 +13,6 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     assetsDir: 'assets',
-    emptyOutDir: true,
-    rollupOptions: {
-      input: resolve(__dirname, 'index.html')
-    }
-  },
-  esbuild: {
-    target: 'esnext'
+    emptyOutDir: true
   }
 })
