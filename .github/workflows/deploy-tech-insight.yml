@@ -1306,19 +1306,38 @@ jobs:
         run: |
           echo "🔧 替换环境变量..."
           
-          # 替换API URL
-          if [ -n "$GOOGLE_APPS_SCRIPT_URL" ]; then
-            echo "设置Google Apps Script URL: $GOOGLE_APPS_SCRIPT_URL"
-            sed -i "s|GOOGLE_APPS_SCRIPT_URL_PLACEHOLDER|$GOOGLE_APPS_SCRIPT_URL|g" src/utils/api.js
-            sed -i "s|GOOGLE_APPS_SCRIPT_URL_PLACEHOLDER|$GOOGLE_APPS_SCRIPT_URL|g" src/main.js
-            echo "✅ API URL替换完成"
-          else
-            echo "⚠️ 警告: GOOGLE_APPS_SCRIPT_URL 未设置，使用默认配置"
+          # 显示当前文件内容（调试用）
+          echo "替换前的api.js内容："
+          grep -n "API_BASE_URL" src/utils/api.js
+          
+          # 检查环境变量
+          if [ -z "$GOOGLE_APPS_SCRIPT_URL" ]; then
+            echo "❌ 错误: GOOGLE_APPS_SCRIPT_URL 环境变量未设置"
+            echo "当前环境变量："
+            env | grep -i google || echo "没有找到Google相关环境变量"
+            exit 1
+          fi
+          
+          echo "✅ Google Apps Script URL已设置: ${GOOGLE_APPS_SCRIPT_URL:0:50}..."
+          
+          # 执行替换
+          sed -i "s|GOOGLE_APPS_SCRIPT_URL_PLACEHOLDER|$GOOGLE_APPS_SCRIPT_URL|g" src/utils/api.js
+          
+          # 验证替换结果
+          echo "替换后的api.js内容："
+          grep -n "API_BASE_URL" src/utils/api.js
+          
+          if grep -q "PLACEHOLDER" src/utils/api.js; then
+            echo "❌ 错误: 环境变量替换失败"
+            cat src/utils/api.js | head -30
+            exit 1
           fi
           
           echo "✅ 环境变量替换完成"
         env:
           GOOGLE_APPS_SCRIPT_URL: ${{ secrets.GOOGLE_APPS_SCRIPT_URL }}
+
+      
 
       - name: Install Dependencies
         run: |
