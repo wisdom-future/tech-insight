@@ -232,75 +232,37 @@ const systemStatus = computed(() => {
   }
 })
 
-const days = ['6天前', '5天前', '4天前', '3天前', '2天前', '昨天', '今天']
+const techTrendData = computed(() => {
+  return {
+    labels: ['学术论文', '专利数据', '开源项目', '技术新闻'],
+    datasets: [{
+      label: '今日采集量',
+      data: [
+        techData.value.academicPapers.todayCount,
+        techData.value.patentData.todayCount,
+        techData.value.openSourceProjects.todayCount,
+        techData.value.techNews.todayCount
+      ],
+      backgroundColor: ['#3B82F6', '#10B981', '#8B5CF6', '#F59E0B']
+    }]
+  }
+})
 
-const techTrendData = computed(() => ({
-  labels: days,
-  datasets: [
-    {
-      label: '学术论文',
-      data: techData.value.academicPapers.trendData || [],
-      borderColor: '#3B82F6',
-      backgroundColor: '#3B82F6',
-      fill: false,
-    },
-    {
-      label: '专利数据',
-      data: techData.value.patentData.trendData || [],
-      borderColor: '#10B981',
-      backgroundColor: '#10B981',
-      fill: false,
-    },
-    {
-      label: '开源项目',
-      data: techData.value.openSourceProjects.trendData || [],
-      borderColor: '#8B5CF6',
-      backgroundColor: '#8B5CF6',
-      fill: false,
-    },
-    {
-      label: '技术新闻',
-      data: techData.value.techNews.trendData || [],
-      borderColor: '#F59E0B',
-      backgroundColor: '#F59E0B',
-      fill: false,
-    }
-  ]
-}));
-
-const benchmarkTrendData = computed(() => ({
-  labels: days,
-  datasets: [
-    {
-      label: '标杆动态',
-      data: benchmarkData.value.industryDynamics.trendData || [],
-      borderColor: '#6366F1',
-      backgroundColor: '#6366F1',
-      fill: false,
-    },
-    {
-      label: '技术创新',
-      data: benchmarkData.value.techInnovation.trendData || [],
-      borderColor: '#EC4899',
-      backgroundColor: '#EC4899',
-      fill: false,
-    },
-    {
-      label: '产品发布',
-      data: benchmarkData.value.productLaunches.trendData || [],
-      borderColor: '#06B6D4',
-      backgroundColor: '#06B6D4',
-      fill: false,
-    },
-    {
-      label: '人才流动',
-      data: benchmarkData.value.talentMovement.trendData || [],
-      borderColor: '#EAB308',
-      backgroundColor: '#EAB308',
-      fill: false,
-    }
-  ]
-}));
+const benchmarkTrendData = computed(() => {
+  return {
+    labels: ['标杆动态', '技术创新', '产品发布', '人才流动'],
+    datasets: [{
+      label: '今日更新量',
+      data: [
+        benchmarkData.value.industryDynamics.todayCount,
+        benchmarkData.value.techInnovation.todayCount,
+        benchmarkData.value.productLaunches.todayCount,
+        benchmarkData.value.talentMovement.todayCount
+      ],
+      backgroundColor: ['#6366F1', '#EC4899', '#06B6D4', '#EAB308']
+    }]
+  }
+})
 
 // 数据获取函数
 const fetchData = async () => {
