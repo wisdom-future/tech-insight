@@ -12,10 +12,13 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
-    assetsDir: 'assets'
+    assetsDir: 'assets',
+    emptyOutDir: true,
+    rollupOptions: {
+      input: resolve(__dirname, 'index.html')
+    }
   },
-  server: {
-    port: 3000,
-    host: true
+  esbuild: {
+    target: 'esnext'
   }
 })
