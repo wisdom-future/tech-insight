@@ -1,9 +1,9 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import Overview from '@/views/Overview.vue'
-import Collection from '@/views/Collection.vue'
-import Analysis from '@/views/Analysis.vue'
-import Action from '@/views/Action.vue'
-import Reports from '@/views/Reports.vue'
+import Overview from '../views/Overview.vue'
+import Collection from '../views/Collection.vue'
+import Analysis from '../views/Analysis.vue'
+import Action from '../views/Action.vue'
+import Reports from '../views/Reports.vue'
 
 const routes = [
   { path: '/', name: 'Overview', component: Overview, meta: { title: '概览总览' } },
