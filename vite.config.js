@@ -4,7 +4,7 @@ import { resolve } from 'path'
 
 export default defineConfig({
   plugins: [vue()],
-  base: './',
+  base: '/tech-insight/',  // 改为绝对路径
   resolve: {
     alias: {
       '@': resolve(__dirname, 'src')
