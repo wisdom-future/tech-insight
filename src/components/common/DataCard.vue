@@ -21,11 +21,19 @@
     <div v-else class="space-y-2">
       <div class="flex justify-between">
         <span class="text-sm text-gray-600">今日采集</span>
-        <span :class="primaryTextClass" class="text-sm font-semibold">{{ data.todayCount }} 条</span>
+        <span :class="primaryTextClass" class="text-sm font-semibold">
+          <a href="javascript:;" @click="$emit('showRawData', 'today')" class="text-blue-600 underline hover:text-blue-800">
+            {{ data.todayCount }} 条
+          </a>
+        </span>
       </div>
       <div class="flex justify-between">
         <span class="text-sm text-gray-600">总计</span>
-        <span class="text-sm font-semibold">{{ data.totalCount }} 条</span>
+        <span class="text-sm font-semibold">
+          <a href="javascript:;" @click="$emit('showRawData', 'total')" class="text-blue-600 underline hover:text-blue-800">
+            {{ data.totalCount }} 条
+          </a>
+        </span>
       </div>
       <div class="flex justify-between">
         <span class="text-sm text-gray-600">成功率</span>
