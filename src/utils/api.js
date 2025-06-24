@@ -114,23 +114,4 @@ export const getSystemStatus = async () => {
   }
 }
 
-// 📊 获取原始数据
-export const getRawData = async (table, type, page = 1, pageSize = 20) => {
-  try {
-    const response = await api.get('', {
-      params: {
-        action: 'getRawData',
-        table: table,
-        type: type,
-        page: page,
-        pageSize: pageSize
-      }
-    })
-    return response.data
-  } catch (error) {
-    console.error('获取原始数据失败:', error)
-    throw error
-  }
-}
-
 export default api
