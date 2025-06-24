@@ -8,8 +8,8 @@
           <p class="mt-1 text-sm text-gray-600">技术数据和业界标杆实时监控状态</p>
         </div>
         <div class="flex items-center space-x-4">
-          <button @click="refreshData" :disabled="loading"
-            class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50">
+          <button @click="refreshData" :disabled="loading" 
+                  class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50">
             <svg v-if="loading" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
               <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -48,13 +48,13 @@
       <h2 class="text-lg font-semibold text-gray-900 mb-4">📊 技术数据监控区域</h2>
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <!-- 学术论文卡片 -->
-        <DataCard :data="techData.academicPapers" color="blue" :loading="loading" @showRawData="type => handleShowRawData('academicPapers', type)" />
+        <DataCard :data="techData.academicPapers" color="blue" :loading="loading" />
         <!-- 专利数据卡片 -->
-        <DataCard :data="techData.patentData" color="green" :loading="loading" @showRawData="type => handleShowRawData('patentData', type)" />
+        <DataCard :data="techData.patentData" color="green" :loading="loading" />
         <!-- 开源项目卡片 -->
-        <DataCard :data="techData.openSourceProjects" color="purple" :loading="loading" @showRawData="type => handleShowRawData('openSourceProjects', type)" />
+        <DataCard :data="techData.openSourceProjects" color="purple" :loading="loading" />
         <!-- 技术新闻卡片 -->
-        <DataCard :data="techData.techNews" color="orange" :loading="loading" @showRawData="type => handleShowRawData('techNews', type)" />
+        <DataCard :data="techData.techNews" color="orange" :loading="loading" />
       </div>
     </div>
 
@@ -63,13 +63,13 @@
       <h2 class="text-lg font-semibold text-gray-900 mb-4">🏭 业界标杆监控区域</h2>
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <!-- 标杆动态卡片 -->
-        <DataCard :data="benchmarkData.industryDynamics" color="indigo" :loading="loading" @showRawData="type => handleShowRawData('industryDynamics', type)" />
+        <DataCard :data="benchmarkData.industryDynamics" color="indigo" :loading="loading" />
         <!-- 技术创新卡片 -->
-        <DataCard :data="benchmarkData.techInnovation" color="pink" :loading="loading" @showRawData="type => handleShowRawData('techInnovation', type)" />
+        <DataCard :data="benchmarkData.techInnovation" color="pink" :loading="loading" />
         <!-- 产品发布卡片 -->
-        <DataCard :data="benchmarkData.productLaunches" color="cyan" :loading="loading" @showRawData="type => handleShowRawData('productLaunches', type)" />
+        <DataCard :data="benchmarkData.productLaunches" color="cyan" :loading="loading" />
         <!-- 人才流动卡片 -->
-        <DataCard :data="benchmarkData.talentMovement" color="yellow" :loading="loading" @showRawData="type => handleShowRawData('talentMovement', type)" />
+        <DataCard :data="benchmarkData.talentMovement" color="yellow" :loading="loading" />
       </div>
     </div>
 
@@ -89,46 +89,19 @@
         </div>
       </div>
     </div>
-
-    <!-- 原始数据弹窗 -->
-    <RawDataDialog
-      v-model:visible="rawDialogVisible"
-      :data="rawDialogData"
-      :columns="rawDialogColumns"
-      :dialogTitle="rawDialogTitle"
-    />
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted, onUnmounted, computed } from 'vue'
-import { getCollectionData, getRawData } from '@/utils/api'
+import { getCollectionData } from '@/utils/api'
 import DataCard from '@/components/common/DataCard.vue'
 import TrendChart from '@/components/charts/TrendChart.vue'
-import RawDataDialog from '@/components/common/RawDataDialog.vue'
 
 // 响应式数据
 const loading = ref(false)
 const error = ref('')
 const lastUpdate = ref('')
-
-// 弹窗相关变量
-const rawDialogVisible = ref(false)
-const rawDialogData = ref([])
-const rawDialogColumns = ref([])
-const rawDialogTitle = ref('')
-
-// 表名映射
-const rawTableMap = {
-  academicPapers: 'Raw_Academic_Papers',
-  patentData: 'Raw_Patent_Data',
-  openSourceProjects: 'Raw_OpenSource_Data',
-  techNews: 'Raw_Tech_News',
-  industryDynamics: 'Raw_Industry_Dynamics',
-  techInnovation: 'Raw_Industry_Dynamics',
-  productLaunches: 'Raw_Competitor_Intelligence',
-  talentMovement: 'Raw_Competitor_Intelligence'
-}
 
 // 技术数据
 const techData = ref({
@@ -243,6 +216,7 @@ const systemStatus = computed(() => {
       dotClass: 'bg-yellow-400'
     }
   }
+  
   if (error.value) {
     return {
       text: '连接异常',
@@ -250,6 +224,7 @@ const systemStatus = computed(() => {
       dotClass: 'bg-red-400'
     }
   }
+  
   return {
     text: '系统运行中',
     class: 'bg-green-100 text-green-800',
@@ -289,46 +264,18 @@ const benchmarkTrendData = computed(() => {
   }
 })
 
-// 处理原始数据弹窗
-async function handleShowRawData(cardKey, type) {
-  try {
-    loading.value = true
-    const table = rawTableMap[cardKey]
-    const res = await getRawData(table, type)
-    rawDialogData.value = res.records || []
-    rawDialogColumns.value = res.columns || []
-    rawDialogTitle.value = `${getCardTitle(cardKey)} - ${type === 'today' ? '今日采集' : '全部数据'}`
-    rawDialogVisible.value = true
-  } catch (err) {
-    error.value = err.message || '原始数据加载失败'
-  } finally {
-    loading.value = false
-  }
-}
-
-function getCardTitle(cardKey) {
-  switch(cardKey) {
-    case 'academicPapers': return '学术论文'
-    case 'patentData': return '专利数据'
-    case 'openSourceProjects': return '开源项目'
-    case 'techNews': return '技术新闻'
-    case 'industryDynamics': return '标杆动态'
-    case 'techInnovation': return '技术创新'
-    case 'productLaunches': return '产品发布'
-    case 'talentMovement': return '人才流动'
-    default: return ''
-  }
-}
-
 // 数据获取函数
 const fetchData = async () => {
   loading.value = true
   error.value = ''
+  
   try {
     console.log('开始获取Collection数据...')
     const response = await getCollectionData()
+    
     if (response.success) {
       console.log('数据获取成功:', response.data)
+      
       // 更新技术数据
       if (response.data.techData) {
         Object.keys(response.data.techData).forEach(key => {
@@ -341,6 +288,7 @@ const fetchData = async () => {
           }
         })
       }
+      
       // 更新业界标杆数据
       if (response.data.benchmarkData) {
         Object.keys(response.data.benchmarkData).forEach(key => {
@@ -353,16 +301,21 @@ const fetchData = async () => {
           }
         })
       }
+      
       lastUpdate.value = new Date(response.lastUpdated).toLocaleString('zh-CN')
       console.log('数据更新完成')
+      
     } else {
       throw new Error(response.error || '数据获取失败')
     }
+    
   } catch (err) {
     console.error('获取数据失败:', err)
     error.value = err.message || '网络连接失败，请检查网络设置'
+    
     // 使用默认数据
     loadDefaultData()
+    
   } finally {
     loading.value = false
   }
@@ -371,6 +324,7 @@ const fetchData = async () => {
 // 加载默认数据
 const loadDefaultData = () => {
   console.log('加载默认数据...')
+  
   // 设置默认的技术数据
   techData.value = {
     academicPapers: {
@@ -422,7 +376,7 @@ const loadDefaultData = () => {
       lastUpdate: new Date().toISOString()
     }
   }
-
+  
   // 设置默认的业界标杆数据
   benchmarkData.value = {
     industryDynamics: {
@@ -474,6 +428,7 @@ const loadDefaultData = () => {
       lastUpdate: new Date().toISOString()
     }
   }
+  
   lastUpdate.value = new Date().toLocaleString('zh-CN')
 }
 
@@ -488,6 +443,7 @@ let refreshInterval = null
 onMounted(() => {
   console.log('Collection页面挂载，开始获取数据...')
   fetchData()
+  
   // 设置定时刷新（每5分钟）
   refreshInterval = setInterval(fetchData, 300000)
 })
