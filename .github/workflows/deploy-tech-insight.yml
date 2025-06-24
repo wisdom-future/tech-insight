@@ -54,18 +54,16 @@ jobs:
           mkdir -p public
           mkdir -p data/{overview,collection,analysis,action,system,reports}
           
-          # 生成 package.json (确保构建脚本正确)
+          # 生成 package.json (不包含 type: module)
           cat > package.json << 'EOF'
           {
             "name": "tech-insight",
             "version": "1.0.0",
             "description": "ICT技术情报决策引擎",
-            "type": "module",
             "scripts": {
               "dev": "vite",
               "build": "vite build",
-              "preview": "vite preview",
-              "serve": "vite preview"
+              "preview": "vite preview"
             },
             "dependencies": {
               "vue": "^3.4.0",
@@ -84,7 +82,7 @@ jobs:
           }
           EOF
           
-          # 生成 vite.config.js (修复版本)
+          # 生成 vite.config.js
           cat > vite.config.js << 'EOF'
           import { defineConfig } from 'vite'
           import vue from '@vitejs/plugin-vue'
@@ -101,18 +99,12 @@ jobs:
             build: {
               outDir: 'dist',
               assetsDir: 'assets',
-              emptyOutDir: true,
-              rollupOptions: {
-                input: resolve(__dirname, 'index.html')
-              }
-            },
-            esbuild: {
-              target: 'esnext'
+              emptyOutDir: true
             }
           })
           EOF
           
-          # 生成 postcss.config.js
+          # 生成 postcss.config.js (CommonJS语法)
           cat > postcss.config.js << 'EOF'
           module.exports = {
             plugins: {
@@ -145,7 +137,7 @@ jobs:
           }
           EOF
           
-          # 生成 index.html (最终修复版本)
+          # 生成 index.html
           cat > index.html << 'EOF'
           <!DOCTYPE html>
           <html lang="zh-CN">
